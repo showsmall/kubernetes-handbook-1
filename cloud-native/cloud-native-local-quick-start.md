@@ -2,9 +2,9 @@
 
 本文旨在帮助您快速部署一个云原生本地实验环境，让您可以基本不需要任何Kubernetes和云原生技术的基础就可以对云原生环境一探究竟。
 
-另外本环境也可以作为一个Kubernetes及其它云原生应用的测试与演示环境。
+本文中使用[kubernetes-vagrant-centos-cluster](https://github.com/rootsongjc/kubernetes-vagrant-centos-cluster)在本地使用 Vagrant 启动三个虚拟机部署分布式的Kubernetes集群。
 
-
+如仅需要体验云原生环境和测试服务功能，可以使用更加轻量级的[cloud-native-sandbox](https://github.com/rootsongjc/cloud-native-sandbox)，通过个人电脑的Docker部署单节点的Kubernetes、Istio等云原生环境。
 
 ## 准备环境
 
@@ -13,8 +13,9 @@
 - 8G以上内存
 - [Vagrant 2.0+](https://www.vagrantup.com/)
 - [VirtualBox 5.0 +](https://www.virtualbox.org/wiki/Downloads)
-- 提前下载kubernetes1.9.1以上版本的release压缩包，[至百度网盘下载](https://pan.baidu.com/s/1zkg2xEAedvZHObmTHDFChg)
+- 提前下载kubernetes1.9.1以上版本的release压缩包，[至百度网盘下载](https://pan.baidu.com/s/1zkg2xEAedvZHObmTHDFChg)（并将名字中的版本号删除）
 - Mac/Linux，**不支持Windows**
+- 支持Kubernetes1.9以上版本（支持当前Kubernetes最新版本1.11.1）
 
 ## 集群
 
@@ -37,7 +38,7 @@ Kubernetes service IP范围：10.254.0.0/16
 安装完成后的集群包含以下组件：
 
 - flannel（`host-gw`模式）
-- kubernetes dashboard 1.8.2
+- kubernetes dashboard
 - etcd（单节点）
 - kubectl
 - CoreDNS
@@ -59,7 +60,7 @@ cd kubernetes-vagrant-centos-cluster
 vagrant up
 ```
 
-**注意**：克隆完Git仓库后，需要提前下载kubernetes的压缩包到`kubenetes-vagrant-centos-cluster`目录下，包括如下两个文件：
+**注意**：克隆完Git仓库后，需要提前下载kubernetes的压缩包到`kubenetes-vagrant-centos-cluster`目录下，**并将压缩包名字中的版本号删除**，包括如下两个文件：
 
 - kubernetes-client-linux-amd64.tar.gz
 - kubernetes-server-linux-amd64.tar.gz
@@ -120,6 +121,8 @@ kubectl -n kube-system describe secret `kubectl -n kube-system get secret|grep a
 
 **注意**：token的值也可以在`vagrant up`的日志的最后看到。
 
+![Kubernetes dashboard](https://github.com/rootsongjc/kubernetes-vagrant-centos-cluster/raw/master/images/dashboard-animation.gif)
+
 **Heapster监控**
 
 创建Heapster监控：
@@ -136,7 +139,9 @@ kubectl apply -f addon/heapster/
 172.17.8.102 grafana.jimmysong.io
 ```
 
-访问Grafana：<http://grafana.jimmysong.io>
+访问Grafana：`http://grafana.jimmysong.io`
+
+![Grafana](https://github.com/rootsongjc/kubernetes-vagrant-centos-cluster/raw/master/images/grafana-animation.gif)
 
 **Traefik**
 
@@ -153,6 +158,8 @@ kubectl apply -f addon/traefik-ingress
 ```
 
 访问Traefik UI：<http://traefik.jimmysong.io>
+
+![Traefik dashboard](https://github.com/rootsongjc/kubernetes-vagrant-centos-cluster/raw/master/images/traefik-ingress.gif)
 
 **EFK**
 
@@ -200,14 +207,14 @@ istioctl create -f yaml/istio-bookinfo/bookinfo-gateway.yaml
 
 | Service      | URL                                                          |
 | ------------ | ------------------------------------------------------------ |
-| grafana      | http://grafana.istio.jimmysong.io                            |
-| servicegraph | http://servicegraph.istio.jimmysong.io/dotviz>, <http://servicegraph.istio.jimmysong.io/graph>,http://servicegraph.istio.jimmysong.io/force/forcegraph.html |
-| tracing      | http://172.17.8.101:$JAEGER_PORT                             |
-| productpage  | http://172.17.8.101:$GATEWAY_PORT/productpage                |
+| grafana      | `http://grafana.istio.jimmysong.io`                          |
+| servicegraph | `http://servicegraph.istio.jimmysong.io/dotviz`, `http://servicegraph.istio.jimmysong.io/graph`, `http://servicegraph.istio.jimmysong.io/force/forcegraph.htm` |
+| tracing      | `http://172.17.8.101:$JAEGER_PORT`                           |
+| productpage  | `http://172.17.8.101:$GATEWAY_PORT/productpage`              |
 
 **注意**：`JAEGER_PORT`可以通过`kubectl -n istio-system get svc tracing -o jsonpath='{.spec.ports[0].nodePort}'`获取，`GATEWAY_PORT`可以通过`kubectl -n istio-system get svc istio-ingressgateway -o jsonpath='{.spec.ports[0].nodePort}'`获取。
 
-详细信息请参阅 https://istio.io/docs/guides/bookinfo.html
+![bookinfo示例](https://github.com/rootsongjc/kubernetes-vagrant-centos-cluster/raw/master/images/bookinfo-demo.gif)
 
 ### Vistio
 
@@ -229,6 +236,44 @@ kubectl -n default port-forward $(kubectl -n default get pod -l app=vistio-web -
 ![vistio视图动画](https://github.com/rootsongjc/kubernetes-vagrant-centos-cluster/raw/master/images/vistio-animation.gif)
 
 更多详细内容请参考[Vistio—使用Netflix的Vizceral可视化Istio service mesh](https://servicemesher.github.io/blog/vistio-visualize-your-istio-mesh-using-netflixs-vizceral/)。
+
+### Kiali
+
+Kiali是一个用于提供Istio service mesh观察性的项目，更多信息请查看 [https://kiali.io](https://kiali.io/)。
+
+在本地该项目的根路径下执行下面的命令：
+
+```bash
+kubectl apply -n istio-system -f addon/kiali
+```
+
+Kiali web地址：`http://172.17.8.101:31439`
+
+用户名/密码：admin/admin
+
+![Kiali页面](https://github.com/rootsongjc/kubernetes-vagrant-centos-cluster/raw/master/images/kiali.gif)
+
+**注意**：Kilia使用Jaeger做追踪，请不用屏蔽kilia页面的弹出窗口。
+
+### Weave scope
+
+[Weave scope](https://github.com/weaveworks/scope)可用于监控、可视化和管理Docker&Kubernetes集群，详情见 https://www.weave.works/oss/scope/ 
+
+在本地该项目的根路径下执行下面的命令：
+
+```bash
+kubectl apply -f addon/weave-scope
+```
+
+在本地的`/etc/hosts`下增加一条记录。
+
+```
+172.17.8.102 scope.weave.jimmysong.io
+```
+
+现在打开浏览器，访问 `http://scope.weave.jimmysong.io/`
+
+![Scope页面](https://github.com/rootsongjc/kubernetes-vagrant-centos-cluster/raw/master/images/weave-scope-animation.gif)
 
 ## 管理
 
@@ -304,4 +349,5 @@ rm -rf .vagrant
 
 - [Kubernetes handbook - jimmysong.io](https://jimmysong.io/kubernetes-handbook)
 - [duffqiu/centos-vagrant](https://github.com/duffqiu/centos-vagrant)
-- [Kubernetes 1.8 kube-proxy 开启 ipvs](https://mritd.me/2017/10/10/kube-proxy-use-ipvs-on-kubernetes-1.8/#%E4%B8%80%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87)
+- [coredns/deployment](https://github.com/coredns/deployment)
+- [Vistio—使用Netflix的Vizceral可视化Istio service mesh](http://www.servicemesher.com/blog/vistio-visualize-your-istio-mesh-using-netflixs-vizceral/)

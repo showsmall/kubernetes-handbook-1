@@ -88,6 +88,8 @@ metadata:
 
 对很多 Controller 资源，包括 ReplicationController、ReplicaSet、StatefulSet、DaemonSet 和 Deployment，默认的垃圾收集策略是 `orphan`。因此，除非指定其它的垃圾收集策略，否则所有 Dependent 对象使用的都是 `orphan` 策略。
 
+**注意**：本段所指的默认值是指 REST API 的默认值，并非 kubectl 命令的默认值，kubectl 默认为级联删除，后面会讲到。
+
 下面是一个在后台删除 Dependent 对象的例子：
 
 ```bash
@@ -119,16 +121,11 @@ kubectl 也支持级联删除。 通过设置 `--cascade` 为 true，可以使�
 
 下面是一个例子，使一个 ReplicaSet 的 Dependent 对象成为孤儿 Dependent：
 
-```Bash
+```bash
 kubectl delete replicaset my-repset --cascade=false
 ```
 
 ## 已知的问题
 
 - 1.7 版本，垃圾收集不支持 [自定义资源](https://kubernetes.io/docs/concepts/api-extension/custom-resources/)，比如那些通过 CustomResourceDefinition 新增，或者通过 API server 聚集而成的资源对象。
-
-[其它已知的问题](https://github.com/kubernetes/kubernetes/issues/26120)
-
-原文地址：https://k8smeetup.github.io/docs/concepts/workloads/controllers/garbage-collection/
-
-译者：[shirdrn](https://github.com/shirdrn)
+- [其它已知的问题](https://github.com/kubernetes/kubernetes/issues/26120)。

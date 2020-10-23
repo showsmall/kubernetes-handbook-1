@@ -1,5 +1,7 @@
 # DaemonSet
 
+本文将为您介绍 DaemonSet 的基本概念。
+
 ## 什么是 DaemonSet？
 
  _DaemonSet_ 确保全部（或者一些）Node 上运行一个 Pod 的副本。当有 Node 加入集群时，也会为他们新增一个 Pod 。当有 Node 从集群移除时，这些 Pod 也会被回收。删除 DaemonSet 将会删除它创建的所有 Pod。
@@ -17,9 +19,9 @@
 
 ### 必需字段
 
-和其它所有 Kubernetes 配置一样，DaemonSet 需要 `apiVersion`、`kind` 和 `metadata`字段。有关配置文件的通用信息，详见文档 [部署应用](https://kubernetes.io/docs/user-guide/deploying-applications/)、[配置容器](https://kubernetes.io/docs/user-guide/configuring-containers/) 和 [资源管理](https://kubernetes.io/docs/concepts/tools/kubectl/object-management-overview/) 。
+和其它所有 Kubernetes 配置一样，DaemonSet 需要 `apiVersion`、`kind` 和 `metadata`字段。有关配置文件的通用信息，详见文档 [部署应用](https://kubernetes.io/docs/user-guide/deploying-applications/)、[配置容器](https://kubernetes.io/docs/user-guide/configuring-containers/) 和资源管理。
 
-DaemonSet 也需要一个 [`.spec`](https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status) 配置段。
+DaemonSet 也需要一个 `.spec`配置段。
 
 ### Pod 模板
 
@@ -34,7 +36,7 @@ Pod 除了必须字段外，在 DaemonSet 中的 Pod 模板必须指定合理的
 
 ### Pod Selector
 
-`.spec.selector` 字段表示 Pod Selector，它与 [Job](https://kubernetes.io/docs/concepts/jobs/run-to-completion-finite-workloads/) 或其它资源的 `.sper.selector` 的原理是相同的。
+`.spec.selector` 字段表示 Pod Selector，它与 [Job](https://kubernetes.io/docs/concepts/jobs/run-to-completion-finite-workloads/) 或其它资源的 `.spec.selector` 的原理是相同的。
 
 `spec.selector` 表示一个对象，它由如下两个字段组成：
 
